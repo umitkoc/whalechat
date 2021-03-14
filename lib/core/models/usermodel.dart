@@ -10,7 +10,7 @@ class UserModel {
 
   UserModel({this.id, this.avatar, this.username, this.code, this.email});
 
-  factory UserModel.createdocument(DocumentSnapshot snapshot) {
+  factory UserModel.createfirebasedocument(DocumentSnapshot snapshot) {
     return UserModel(
         id: snapshot.id,
         username: snapshot.data()['username'],
@@ -19,7 +19,7 @@ class UserModel {
         code: snapshot.data()['code']);
   }
 
-  factory UserModel.createfirestore(User user) {
+  factory UserModel.createfirebaseuser(User user) {
     return UserModel(
         id: user.uid,
         avatar: user.photoURL,

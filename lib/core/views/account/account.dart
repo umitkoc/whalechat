@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
+import 'package:whalechat/core/widgets/loading.dart';
 
 class Account extends StatefulWidget {
   @override
@@ -20,12 +23,12 @@ class _AccountState extends State<Account> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
-        children: [bodys(context), loading ? load() : SizedBox(height: 0.0)],
+        children: [bodys(), loading ? load() : SizedBox(height: 0.0)],
       ),
     );
   }
 
-  Widget bodys(BuildContext context) {
+  Widget bodys() {
     return SafeArea(
       child: Container(
         width: double.infinity,
@@ -42,11 +45,9 @@ class _AccountState extends State<Account> {
     );
   }
 
-  Widget load() {
-    return Center(child: RefreshProgressIndicator());
-  }
-
   Widget form() {
+    final _serviceauth =
+        Provider.of<FirebaseAuthService>(context, listen: false);
     return Expanded(
         flex: 3,
         child: PageView(
@@ -54,9 +55,9 @@ class _AccountState extends State<Account> {
           controller: _controller,
           scrollDirection: Axis.horizontal,
           children: [
-            login(),
-            register(),
-            forgot(),
+            login(_serviceauth),
+            register(_serviceauth),
+            forgot(_serviceauth),
           ],
         ));
   }
@@ -82,7 +83,7 @@ class _AccountState extends State<Account> {
   }
 
 ///////////////login widget
-  Widget login() {
+  Widget login(FirebaseAuthService service) {
     final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -128,9 +129,17 @@ class _AccountState extends State<Account> {
                     cursorColor: Colors.amber),
               ),
               ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formkey.currentState.validate()) {
                       _formkey.currentState.save();
+                      setState(() {
+                        loading = true;
+                      });
+                      await service.emailSignIn(
+                          email: _email, password: _password);
+                      setState(() {
+                        loading = false;
+                      });
                     }
                   },
                   icon: Icon(Icons.login),
@@ -138,7 +147,15 @@ class _AccountState extends State<Account> {
               ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                       primary: Colors.amber, onPrimary: Colors.black),
-                  onPressed: () {},
+                  onPressed: () async {
+                    setState(() {
+                      loading = true;
+                    });
+                    await service.googleSign();
+                    setState(() {
+                      loading = false;
+                    });
+                  },
                   icon: Icon(Icons.login_outlined),
                   label: Text("Google")),
               ElevatedButton.icon(
@@ -166,7 +183,7 @@ class _AccountState extends State<Account> {
   }
 
 /////////////register widget
-  Widget register() {
+  Widget register(FirebaseAuthService service) {
     final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -228,9 +245,17 @@ class _AccountState extends State<Account> {
                     cursorColor: Colors.amber),
               ),
               ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formkey.currentState.validate()) {
+                      setState(() {
+                        loading = true;
+                      });
                       _formkey.currentState.save();
+                      await service.emailSignUp(
+                          email: _email, password: _password);
+                      setState(() {
+                        loading = false;
+                      });
                     }
                   },
                   icon: Icon(Icons.account_box),
@@ -251,7 +276,7 @@ class _AccountState extends State<Account> {
   }
 
 ///////////////forgot widget
-  Widget forgot() {
+  Widget forgot(FirebaseAuthService service) {
     final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -279,10 +304,22 @@ class _AccountState extends State<Account> {
                         prefixIcon: Icon(Icons.email)),
                     cursorColor: Colors.amber),
               ),
+              Text(
+                "Please check the link to your gmail account after the transaction.",
+                style: TextStyle(color: Colors.amber),
+              ),
               ElevatedButton.icon(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formkey.currentState.validate()) {
                       _formkey.currentState.save();
+                      setState(() {
+                        loading = true;
+                      });
+                      await service.resetpassword(email: _email);
+                      setState(() {
+                        loading = false;
+                        _controller.jumpToPage(0);
+                      });
                     }
                   },
                   icon: Icon(Icons.account_box),

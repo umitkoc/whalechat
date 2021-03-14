@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:whalechat/core/routerpage.dart';
+import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,10 +13,13 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(primaryColor: Colors.amber),
-        title: 'WhaleChat',
-        home: RouterPage());
+    return Provider<FirebaseAuthService>(
+      create: (_) => FirebaseAuthService(),
+      child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(primaryColor: Colors.amber),
+          title: 'WhaleChat',
+          home: RouterPage()),
+    );
   }
 }
