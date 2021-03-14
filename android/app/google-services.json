@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "930094756232",
+    "project_id": "whalechat-15e32",
+    "storage_bucket": "whalechat-15e32.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:930094756232:android:d637a7bf38337559f2ca3d",
+        "android_client_info": {
+          "package_name": "com.example.whalechat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "930094756232-o5g6dhc1kgj63oo5kmgp7s6v1pnflrtm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.whalechat",
+            "certificate_hash": "b0f3b8779e4ab6f38c84759d0c8db4847efbe3a8"
+          }
+        },
+        {
+          "client_id": "930094756232-v6ceqe84pd76ug23drjdhoqr54ett8vl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAN4x2pT43Cji4NYwEDXGlGTzEiYq2ao3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "930094756232-v6ceqe84pd76ug23drjdhoqr54ett8vl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
