@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
 import 'package:whalechat/core/widgets/loading.dart';
 
 class Account extends StatefulWidget {
@@ -10,7 +12,6 @@ class Account extends StatefulWidget {
 
 class _AccountState extends State<Account> {
   final PageController _controller = PageController();
-  // ignore: unused_field
   String _email, _password, _username;
   bool loading = false;
   @override
@@ -22,6 +23,10 @@ class _AccountState extends State<Account> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.teal,
+        elevation: 0,
+      ),
       body: Stack(
         children: [bodys(), loading ? load() : SizedBox(height: 0.0)],
       ),
@@ -29,18 +34,16 @@ class _AccountState extends State<Account> {
   }
 
   Widget bodys() {
-    return SafeArea(
-      child: Container(
-        width: double.infinity,
-        height: double.infinity,
-        color: Colors.teal,
-        child: Column(
-          children: [
-            logoimage(),
-            logotitle(),
-            form(),
-          ],
-        ),
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      color: Colors.teal,
+      child: Column(
+        children: [
+          logoimage(),
+          logotitle(),
+          form(),
+        ],
       ),
     );
   }
@@ -151,10 +154,24 @@ class _AccountState extends State<Account> {
                     setState(() {
                       loading = true;
                     });
-                    await service.googleSign();
-                    setState(() {
-                      loading = false;
-                    });
+                    UserModel user = await service.googleSign();
+
+                    if (user != null) {
+                      UserModel model =
+                          await FirebaseUserService().getUser(id: user.id);
+                      if (model == null) {
+                        await FirebaseUserService().usercreate(
+                            avatar: user.avatar,
+                            email: user.email,
+                            username: user.username,
+                            id: user.id);
+                      }
+                    }
+                    if (mounted) {
+                      setState(() {
+                        loading = false;
+                      });
+                    }
                   },
                   icon: Icon(Icons.login_outlined),
                   label: Text("Google")),
@@ -251,11 +268,22 @@ class _AccountState extends State<Account> {
                         loading = true;
                       });
                       _formkey.currentState.save();
-                      await service.emailSignUp(
+
+                      UserModel user = await service.emailSignUp(
                           email: _email, password: _password);
-                      setState(() {
-                        loading = false;
-                      });
+                      if (user != null) {
+                        FirebaseUserService().usercreate(
+                          id: user.id,
+                          email: _email,
+                          username: _username,
+                          avatar: "",
+                        );
+                      }
+                      if (mounted) {
+                        setState(() {
+                          loading = false;
+                        });
+                      }
                     }
                   },
                   icon: Icon(Icons.account_box),
@@ -263,7 +291,7 @@ class _AccountState extends State<Account> {
               ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                       primary: Colors.black, onPrimary: Colors.white),
-                  onPressed: () {
+                  onPressed: () async {
                     setState(() {
                       _controller.jumpToPage(0);
                     });

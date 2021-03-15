@@ -14,12 +14,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Provider<FirebaseAuthService>(
-      create: (_) => FirebaseAuthService(),
-      child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(primaryColor: Colors.amber),
-          title: 'WhaleChat',
-          home: RouterPage()),
-    );
+        create: (_) => FirebaseAuthService(),
+        child: MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(primaryColor: Colors.amber),
+            title: 'WhaleChat',
+            home: RouterPage()));
   }
 }
