@@ -1,54 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:timeago/timeago.dart' as timeago;
+import 'package:whalechat/core/models/messagemodel.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
 
 class Message extends StatefulWidget {
   @override
   _MessageState createState() => _MessageState();
 }
 
-var dizi = [
-  1,
-  0,
-  1,
-  0,
-  0,
-  1,
-  1,
-  1,
-  0,
-  0,
-  0,
-  1,
-  0,
-  1,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0,
-  1,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0,
-  1,
-  0
-];
-
 class _MessageState extends State<Message> {
+  final TextEditingController _controller = TextEditingController();
+  String userid = "2";
+  String seconduserid = "1";
+
+  @override
+  void initState() {
+    super.initState();
+    timeago.setLocaleMessages('tr', timeago.TrMessages());
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Color(0xffdee2d6),
         appBar: AppBar(
           elevation: 0,
           backgroundColor: Colors.teal,
@@ -60,77 +41,141 @@ class _MessageState extends State<Message> {
               SizedBox(width: 20.0),
               Text(
                 "username",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontSize: 16),
               )
             ],
           ),
         ),
-        body: Column(children: [
-          Expanded(
-              flex: 9,
-              child: Container(
-                color: Colors.teal[200],
-                child: ListView.builder(
-                    reverse: true,
-                    itemCount: dizi.length,
-                    itemBuilder: (context, index) {
-                      if (dizi[index] == 0) {
-                        return Row(children: [
-                          rightmessage(context),
-                          Expanded(child: SizedBox())
-                        ]);
-                      } else {
-                        return Row(children: [
-                          Expanded(child: SizedBox()),
-                          leftmessage(context)
-                        ]);
-                      }
-                    }),
-              )),
-          Expanded(
-              child: Container(
-            color: Colors.teal[100],
-            child: Form(
-                child: Center(
-              child: TextFormField(
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50.0)),
-                    hintText: "Message...",
-                    suffixIcon:
-                        IconButton(icon: Icon(Icons.send), onPressed: () {})),
+        body: Container(
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [messagelistdemo(), messageform()])));
+  }
+
+  Widget messagelistdemo() {
+    return Expanded(
+      child: ListView(
+        children: [
+          Row(
+            mainAxisAlignment:
+                userid == "1" ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  constraints: BoxConstraints(
+                    maxWidth: 300,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    color: userid == "1"
+                        ? Colors.deepPurple[300]
+                        : Colors.teal[300],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            "username",
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                      SizedBox(
+                        height: 5,
+                      ),
+                      Text(
+                        "Vel sed voluptatem est voluptatum magnam doloribus eaque aut commodi. Esse et quia. Enim ut nostrum qui sunt repudiandae quas. Assumenda esse et corporis eos. Et quia at voluptatem repudiandae. Eveniet optio aspernatur qui recusandae.",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            timeago.format(DateTime.now(), locale: 'tr'),
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
               ),
-            )),
-          ))
-        ]));
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget rightmessage(BuildContext context) {
-    return Expanded(
-        flex: 4,
-        child: Card(
-            color: Colors.teal[400],
-            child: ListTile(
-              title: Text("username", style: TextStyle(color: Colors.white)),
-              subtitle: Text("culpa ducimus quiculpa ducimus"),
-              trailing: Text(DateTime.now().toString().substring(10, 16),
-                  style: TextStyle(color: Colors.white)),
-              leading: CircleAvatar(backgroundColor: Colors.amber[200]),
-            )));
-  }
+  Widget messagelist() => Expanded(
+      child: StreamBuilder<QuerySnapshot>(
+          stream: MessageService().getMessage(userid, seconduserid),
+          builder: (context, snapshots) {
+            if (snapshots.connectionState == ConnectionState.waiting) {
+              return Center(child: RefreshProgressIndicator());
+            }
+            if (!snapshots.hasData) {
+              return SizedBox(height: 0.0);
+            } else {
+              return ListView.builder(
+                  itemCount: snapshots.data.docs.length,
+                  itemBuilder: (context, index) {
+                    MessageModel model =
+                        MessageModel.createdocument(snapshots.data.docs[index]);
+                    return Container(child: Text(model.value));
+                  });
+            }
+          }));
 
-  Widget leftmessage(BuildContext context) {
-    return Expanded(
-        flex: 4,
-        child: Card(
-            color: Colors.red[300],
-            child: ListTile(
-              title: Text("username", style: TextStyle(color: Colors.white)),
-              subtitle: Text(
-                  "Nemo temporibus illo et quis expedita perspiciatis inventore est. Ut numquam iure quam. Blanditiis quia omnis velit deleniti voluptatum veniam expedita."),
-              leading: Text(DateTime.now().toString().substring(10, 16),
-                  style: TextStyle(color: Colors.white)),
-              trailing: CircleAvatar(backgroundColor: Colors.blueAccent),
-            )));
-  }
+  Widget messageform() => Container(
+          child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.all(16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                minLines: 1,
+                maxLines: 3,
+              ),
+            ),
+            SizedBox(width: 5.0),
+            RawMaterialButton(
+              onPressed: () {
+                if (_controller.text.trim().isNotEmpty) {
+                  print(_controller.text);
+
+                  ///message create function
+                  _controller.clear();
+                }
+              },
+              fillColor: Colors.teal,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  "Gönder",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5)),
+            )
+          ],
+        ),
+      ));
 }

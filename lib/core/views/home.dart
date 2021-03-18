@@ -141,10 +141,15 @@ class _HomeState extends State<Home> {
                   enabled: username,
                   decoration: InputDecoration(
                       suffixIcon: IconButton(
-                          icon: Icon(Icons.send), onPressed: () => null),
+                          icon: Icon(Icons.send),
+                          onPressed: () {
+                            setState(() {
+                              username = false;
+                            });
+                          }),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(50)),
-                      hintText: "Username"))),
+                      hintText: "Username:demo123"))),
         ),
         SizedBox(height: 10.0),
         Form(
@@ -153,7 +158,7 @@ class _HomeState extends State<Home> {
                 decoration: InputDecoration(
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(50)),
-                    hintText: "Email"))),
+                    hintText: "Email:demo@gmail.com"))),
         SizedBox(height: 10.0),
         Form(
             child: TextFormField(
@@ -161,7 +166,7 @@ class _HomeState extends State<Home> {
                 decoration: InputDecoration(
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(50)),
-                    hintText: "Code"))),
+                    hintText: "Code:XA12c8a"))),
       ])
     ]);
   }
