@@ -13,6 +13,7 @@ class _MessageState extends State<Message> {
   final TextEditingController _controller = TextEditingController();
   String userid = "2";
   String seconduserid = "1";
+  List<String> users = ["1", "2", "1", "2", "1", "2", "1", "2", "1", "2"];
 
   @override
   void initState() {
@@ -54,63 +55,63 @@ class _MessageState extends State<Message> {
 
   Widget messagelistdemo() {
     return Expanded(
-      child: ListView(
-        children: [
-          Row(
-            mainAxisAlignment:
-                userid == "1" ? MainAxisAlignment.end : MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  constraints: BoxConstraints(
-                    maxWidth: 300,
-                  ),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                    color: userid == "1"
-                        ? Colors.deepPurple[300]
-                        : Colors.teal[300],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
+        child: ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              return Row(
+                mainAxisAlignment: users[index] == "1"
+                    ? MainAxisAlignment.end
+                    : MainAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      constraints: BoxConstraints(
+                        maxWidth: 280,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: users[index] == "1"
+                            ? Colors.deepPurple[300]
+                            : Colors.teal[300],
+                      ),
+                      child: Column(
                         children: [
+                          Row(
+                            children: [
+                              Text(
+                                "username",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
+                          SizedBox(
+                            height: 5,
+                          ),
                           Text(
-                            "username",
-                            style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                            " Eveniet optio aspernatur qui recusandae.",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                timeago.format(DateTime.now(), locale: 'tr'),
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ],
                           )
                         ],
                       ),
-                      SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        "Vel sed voluptatem est voluptatum magnam doloribus eaque aut commodi. Esse et quia. Enim ut nostrum qui sunt repudiandae quas. Assumenda esse et corporis eos. Et quia at voluptatem repudiandae. Eveniet optio aspernatur qui recusandae.",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            timeago.format(DateTime.now(), locale: 'tr'),
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      )
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+                ],
+              );
+            }));
   }
 
   Widget messagelist() => Expanded(
