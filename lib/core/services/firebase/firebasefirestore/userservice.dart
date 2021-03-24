@@ -28,4 +28,27 @@ class FirebaseUserService {
     }
     return null;
   }
+
+  Stream<QuerySnapshot> getUsers({String id}) {
+    return _firestore
+        .collection("user")
+        .doc(id)
+        .collection("users")
+        .snapshots();
+  }
+
+  Future<List<UserModel>> getCode({String code}) async {
+    QuerySnapshot snapshot = await _firestore
+        .collection("user")
+        .where("code", isEqualTo: code)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      List<UserModel> model = snapshot.docs
+          .map((e) => UserModel.createfirebasedocument(e))
+          .toList();
+      return model;
+    }
+    return null;
+  }
 }

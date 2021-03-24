@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
 import 'package:whalechat/core/views/message.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:whalechat/core/widgets/loading.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -11,24 +14,33 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final PageController _pageController = PageController();
-  bool loading = false;
-  int index = 0;
+  final dizi = {"id": "", "username": "", "avatar": ""};
+  final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
+  final TextEditingController _textcontroller = TextEditingController();
+  bool loading;
+  int index;
   String _code;
-  bool username = false;
+  bool username;
 
   @override
   void initState() {
     super.initState();
+    loading = username = false;
+    index = 0;
+    _code = "";
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _textcontroller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final _service = Provider.of<FirebaseAuthService>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Colors.teal,
@@ -48,11 +60,19 @@ class _HomeState extends State<Home> {
                     : IconButton(
                         color: Colors.amber,
                         icon: Icon(Icons.close_rounded),
-                        onPressed: () => close())
+                        onPressed: () async {
+                          setState(() {
+                            loading = true;
+                          });
+                          await _service.signOut();
+                        })
           ]),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: bodys(),
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          bodys(context, _service.activeuserid),
+          loading ? load() : SizedBox(height: 0.0)
+        ],
       ),
       bottomNavigationBar: buildBottomNavigationBar(),
     );
@@ -77,19 +97,19 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget bodys() {
-    final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
+  Widget bodys(BuildContext context, String id) {
     return PageView(
         physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
         controller: _pageController,
         children: [
-          _messagelist(),
-          _userlist(_formkey),
-          profiledemo(context),
+          _messagelist(id),
+          _userlist(context, id),
+          profile(context, id),
         ]);
   }
 
-  ListView _messagelist() {
+  Widget _messagelist(String id) {
+    //streambuilder ile kullanıcıların konuşma listesi gelecek
     return ListView(
       children: [
         _usermessage(),
@@ -97,102 +117,6 @@ class _HomeState extends State<Home> {
         _usermessage(),
         _usermessage(),
       ],
-    );
-  }
-
-  ListView _userlist(GlobalKey<FormState> _formkey) {
-    return ListView(children: [
-      _formfriendsearch(_formkey),
-      // ignore: todo
-      //TODO:here add stream--->user list
-      _user()
-    ]);
-  }
-
-  Widget profiledemo(BuildContext context) {
-    return ListView(children: [
-      Stack(alignment: Alignment.bottomRight, children: [
-        Container(
-          width: double.infinity,
-          height: 300.0,
-          decoration: BoxDecoration(
-              image:
-                  DecorationImage(image: AssetImage("assets/images/logo.png"))),
-        ),
-        Container(
-            width: 50.0,
-            height: 50.0,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25.0),
-              color: Colors.amber,
-            ),
-            child: IconButton(icon: Icon(Icons.image), onPressed: () => null))
-      ]),
-      Column(children: [
-        SizedBox(height: 10.0),
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              username = true;
-            });
-          },
-          child: Form(
-              child: TextFormField(
-                  enabled: username,
-                  decoration: InputDecoration(
-                      suffixIcon: IconButton(
-                          icon: Icon(Icons.send),
-                          onPressed: () {
-                            setState(() {
-                              username = false;
-                            });
-                          }),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50)),
-                      hintText: "Username:demo123"))),
-        ),
-        SizedBox(height: 10.0),
-        Form(
-            child: TextFormField(
-                enabled: false,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50)),
-                    hintText: "Email:demo@gmail.com"))),
-        SizedBox(height: 10.0),
-        Form(
-            child: TextFormField(
-                enabled: false,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(50)),
-                    hintText: "Code:XA12c8a"))),
-      ])
-    ]);
-  }
-
-  Widget _formfriendsearch(GlobalKey<FormState> _formkey) {
-    return Form(
-      key: _formkey,
-      child: TextFormField(
-          validator: (String value) =>
-              value.trim().isEmpty ? "error empty code!" : null,
-          onSaved: (String value) => _code = value.trim(),
-          maxLength: 8,
-          decoration: InputDecoration(
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(50)),
-              suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: () {
-                    if (_formkey.currentState.validate()) {
-                      _formkey.currentState.save();
-                      print(_code);
-                      //ignore:todo
-                      //TODO: buraya code ile kullanıcı çağıracak
-                    }
-                  }),
-              hintText: "Search Code")),
     );
   }
 
@@ -217,43 +141,179 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _user() {
-    return Card(
-        child: ListTile(
-            autofocus: false,
-            leading: CircleAvatar(
-              backgroundColor: Colors.cyan,
+  Widget _userlist(BuildContext context, String id) {
+    return Column(
+      children: [
+        Expanded(
+            child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Form(
+                          key: _formkey,
+                          child: TextFormField(
+                              validator: (String value) {
+                                if (value.trim().length < 7) {
+                                  return "please min 7 character code ";
+                                }
+                                return null;
+                              },
+                              onSaved: (String value) {
+                                _code = value.trim();
+                                _textcontroller.clear();
+                              },
+                              maxLength: 7,
+                              controller: _textcontroller,
+                              keyboardType: TextInputType.emailAddress,
+                              style: TextStyle(fontSize: 18),
+                              decoration: InputDecoration(
+                                  suffixIcon: IconButton(
+                                      alignment: Alignment.center,
+                                      icon: Icon(Icons.search),
+                                      onPressed: () async {
+                                        if (_formkey.currentState.validate()) {
+                                          _formkey.currentState.save();
+                                          setState(() {
+                                            loading = true;
+                                          });
+                                          List<UserModel> model =
+                                              await FirebaseUserService()
+                                                  .getCode(code: _code);
+                                          if (model != null) {
+                                            setState(() {
+                                              dizi["id"] = model[0].id;
+                                              dizi["avatar"] = model[0].avatar;
+                                              dizi["username"] =
+                                                  model[0].username;
+                                              dizi["id"] = "";
+                                            });
+                                          }
+                                          setState(() {
+                                            loading = false;
+                                          });
+                                        }
+                                      }),
+                                  hintText: "Code...",
+                                  contentPadding: const EdgeInsets.all(16),
+                                  border: OutlineInputBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(5))))),
+                      dizi["id"].isNotEmpty
+                          ? Card(
+                              child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: dizi["avatar"].isEmpty
+                                    ? AssetImage("assets/images/logo.png")
+                                    : NetworkImage(dizi["avatar"]),
+                              ),
+                              title: Text('${dizi["username"]}'),
+                              trailing: IconButton(
+                                  icon: Icon(Icons.add),
+                                  onPressed: () {
+                                    setState(() {
+                                      print(dizi["id"]);
+                                      dizi["id"] = "";
+                                    });
+                                  }),
+                            ))
+                          : SizedBox(height: 20.0),
+                    ]))),
+        Expanded(
+            child: Column(
+          children: [
+            Text(
+              "Friends",
+              style: TextStyle(fontSize: 20),
             ),
-            title: Text(
-              "username",
-              style: TextStyle(fontSize: 12),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseUserService().getUsers(id: id),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text("Error Code..."));
+                    }
+                    if (snapshot.hasData) {
+                      List<UserModel> users = snapshot.data.docs
+                          .map((value) =>
+                              UserModel.createfirebasedocument(value))
+                          .toList();
+                      return ListView.builder(
+                        scrollDirection: Axis.vertical,
+                        itemCount: users.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                  backgroundImage: users[index].avatar == ""
+                                      ? AssetImage("assets/images/logo.png")
+                                      : NetworkImage(users[index].avatar)),
+                              title: Text("${users[index].username}"),
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      return Center(child: RefreshProgressIndicator());
+                    }
+                  }),
             ),
-            trailing: IconButton(icon: Icon(Icons.add), onPressed: () {})));
-  }
-
-  void close() async {
-    final _authservice =
-        Provider.of<FirebaseAuthService>(context, listen: false);
-    setState(() {
-      loading = true;
-    });
-    await _authservice.signOut();
-  }
-
-  void addfriends() {}
-
-  Widget profile(BuildContext context) {
-    return FutureBuilder(
-      future: FirebaseUserService().getUser(id: ""),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: RefreshProgressIndicator());
-        }
-        if (!snapshot.hasData) {
-          return Center(child: RefreshProgressIndicator());
-        }
-        return ListView();
-      },
+          ],
+        )),
+      ],
     );
+  }
+
+  Widget profile(BuildContext context, String id) {
+    return FutureBuilder<UserModel>(
+        future: FirebaseUserService().getUser(id: id),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: RefreshProgressIndicator());
+          }
+          if (!snapshot.hasData) {
+            return Center(child: RefreshProgressIndicator());
+          } else {
+            UserModel user = snapshot.data;
+            return Column(children: [
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          fit: BoxFit.fitHeight,
+                          image: user.avatar == ""
+                              ? AssetImage("assets/images/logo.png")
+                              : NetworkImage(user.avatar))),
+                ),
+              ),
+              Expanded(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                    ListTile(
+                        title: Text("username"),
+                        subtitle: Text(
+                          "${user.username}",
+                        )),
+                    ListTile(
+                        title: Text("email"),
+                        subtitle: Text(
+                          "${user.email}",
+                        )),
+                    ListTile(
+                        title: Text("code"),
+                        subtitle: Text(
+                          "${user.code}",
+                        )),
+                    ElevatedButton.icon(
+                        onPressed: () {
+                          
+                        },
+                        icon: Icon(Icons.account_circle),
+                        label: Text("Edit Profile"))
+                  ]))
+            ]);
+          }
+        });
   }
 }
