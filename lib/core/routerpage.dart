@@ -18,6 +18,7 @@ class RouterPage extends StatelessWidget {
         if (snapshot.hasData) {
           UserModel user = snapshot.data;
           _service.activeuserid = user.id;
+
           return Home();
         }
         return Account();

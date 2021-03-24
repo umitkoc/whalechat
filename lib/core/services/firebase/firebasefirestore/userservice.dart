@@ -51,4 +51,30 @@ class FirebaseUserService {
     }
     return null;
   }
+
+  Future<void> addFriend(
+      {String username,
+      String avatar,
+      String userid,
+      String friendid,
+      String code}) async {
+    UserModel model = await getUser(id: userid);
+    if (code != model.code) {
+      await _firestore
+          .collection("user")
+          .doc(userid)
+          .collection("users")
+          .doc(friendid)
+          .set({
+        "avatar": avatar,
+        "username": username,
+      });
+      await _firestore
+          .collection("user")
+          .doc(friendid)
+          .collection("users")
+          .doc(userid)
+          .set({"avatar": model.avatar, "username": model.username});
+    }
+  }
 }

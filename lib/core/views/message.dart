@@ -56,6 +56,7 @@ class _MessageState extends State<Message> {
   Widget messagelistdemo() {
     return Expanded(
         child: ListView.builder(
+            reverse: true,
             itemCount: users.length,
             itemBuilder: (context, index) {
               return Row(
