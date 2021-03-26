@@ -299,12 +299,8 @@ class _HomeState extends State<Home> {
             setState(() {
               loading = true;
             });
-            await FirebaseUserService().addFriend(
-                avatar: dizi["avatar"],
-                friendid: dizi["id"],
-                userid: id,
-                username: dizi["username"],
-                code: dizi["code"]);
+            await FirebaseUserService()
+                .addFriend(friendId: dizi["id"], userId: id);
             setState(() {
               loading = false;
               dizi["ok"] = "";
@@ -324,40 +320,53 @@ class _HomeState extends State<Home> {
               style: TextStyle(fontSize: 20),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseUserService().getUsers(id: id),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return Center(child: Text("Error Code..."));
-                      }
-                      if (snapshot.hasData) {
-                        List<UserModel> users = snapshot.data.docs
-                            .map((value) =>
-                                UserModel.createfirebasedocument(value))
-                            .toList();
-                        return ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          itemCount: users.length,
-                          itemBuilder: (context, index) {
-                            return Card(
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                    backgroundImage: users[index].avatar == ""
-                                        ? AssetImage("assets/images/logo.png")
-                                        : NetworkImage(users[index].avatar)),
-                                title: Text("${users[index].username}"),
-                              ),
-                            );
-                          },
-                        );
-                      } else {
-                        return Center(child: RefreshProgressIndicator());
-                      }
-                    }),
-              ),
-            ),
+                child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: StreamBuilder<QuerySnapshot>(
+                        stream: FirebaseUserService().getUsers(id: id),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return Center(child: Text("Error Code..."));
+                          }
+                          if (snapshot.hasData) {
+                            List<String> users =
+                                snapshot.data.docs.map((e) => e.id).toList();
+                            return ListView.builder(
+                                itemCount: users.length,
+                                itemBuilder: (_, index) {
+                                  return FutureBuilder(
+                                      future: FirebaseUserService()
+                                          .getUser(id: users[index]),
+                                      builder: (_, snapshot) {
+                                        if (snapshot.hasError) {
+                                          return Center(
+                                              child: Text("no has data"));
+                                        } else if (snapshot.hasData) {
+                                          UserModel user = snapshot.data;
+                                          return Card(
+                                              child: GestureDetector(
+                                                  onTap: () {
+                                                    print(user.id);
+                                                  },
+                                                  child: ListTile(
+                                                      leading: CircleAvatar(
+                                                          backgroundImage: user
+                                                                      .avatar ==
+                                                                  ""
+                                                              ? AssetImage(
+                                                                  "assets/images/logo.png")
+                                                              : NetworkImage(
+                                                                  user.avatar)),
+                                                      title: Text(
+                                                          "${user.username}"))));
+                                        }
+                                        return Center(
+                                            child: RefreshProgressIndicator());
+                                      });
+                                });
+                          }
+                          return Center(child: RefreshProgressIndicator());
+                        })))
           ],
         ));
   }

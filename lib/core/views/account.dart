@@ -54,15 +54,14 @@ class _AccountState extends State<Account> {
     return Expanded(
         flex: 3,
         child: PageView(
-          physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
-          controller: _controller,
-          scrollDirection: Axis.horizontal,
-          children: [
-            login(_serviceauth),
-            register(_serviceauth),
-            forgot(_serviceauth),
-          ],
-        ));
+            physics: ScrollPhysics(parent: NeverScrollableScrollPhysics()),
+            controller: _controller,
+            scrollDirection: Axis.horizontal,
+            children: [
+              login(_serviceauth),
+              register(_serviceauth),
+              forgot(_serviceauth)
+            ]));
   }
 
   Widget logotitle() {

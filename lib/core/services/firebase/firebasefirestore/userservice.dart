@@ -9,7 +9,6 @@ class FirebaseUserService {
   Future<void> usercreate(
       {String email, String username, String id, String avatar = ""}) async {
     await _firestore.collection("user").doc(id).set({
-      "id": id,
       "email": email,
       "username": username,
       "create_date": date,
@@ -52,29 +51,22 @@ class FirebaseUserService {
     return null;
   }
 
-  Future<void> addFriend(
-      {String username,
-      String avatar,
-      String userid,
-      String friendid,
-      String code}) async {
-    UserModel model = await getUser(id: userid);
-    if (code != model.code) {
+  Future<void> addFriend({String userId, String friendId}) async {
+    if (userId != friendId) {
       await _firestore
           .collection("user")
-          .doc(userid)
+          .doc(userId)
           .collection("users")
-          .doc(friendid)
-          .set({
-        "avatar": avatar,
-        "username": username,
-      });
+          .doc(friendId)
+          .set({});
       await _firestore
           .collection("user")
-          .doc(friendid)
+          .doc(friendId)
           .collection("users")
-          .doc(userid)
-          .set({"avatar": model.avatar, "username": model.username});
+          .doc(userId)
+          .set({});
     }
   }
+
+  
 }
