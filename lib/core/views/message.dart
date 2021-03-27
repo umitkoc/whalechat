@@ -2,23 +2,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:whalechat/core/models/messagemodel.dart';
+import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
 
 class Message extends StatefulWidget {
+  final String userId;
+  final String friendId;
+  final String username;
+  final String avatar;
+
+  const Message({this.userId, this.friendId, this.username, this.avatar});
+
   @override
   _MessageState createState() => _MessageState();
 }
 
 class _MessageState extends State<Message> {
   final TextEditingController _controller = TextEditingController();
-  String userid = "2";
-  String seconduserid = "1";
-  List<String> users = ["1", "2", "1", "2", "1", "2", "1", "2", "1", "2"];
-
+  UserModel model;
   @override
   void initState() {
-    super.initState();
     timeago.setLocaleMessages('tr', timeago.TrMessages());
+    getUser();
+    super.initState();
+  }
+
+  Future<void> getUser() async {
+    model = await FirebaseUserService().getUser(id: this.widget.userId);
   }
 
   @override
@@ -37,11 +48,13 @@ class _MessageState extends State<Message> {
           title: Row(
             children: [
               CircleAvatar(
-                backgroundColor: Colors.amber,
+                backgroundImage: this.widget.avatar == ""
+                    ? AssetImage("assets/images/logo.png")
+                    : NetworkImage(this.widget.avatar),
               ),
               SizedBox(width: 20.0),
               Text(
-                "username",
+                "${this.widget.username}",
                 style: TextStyle(color: Colors.white, fontSize: 16),
               )
             ],
@@ -50,90 +63,135 @@ class _MessageState extends State<Message> {
         body: Container(
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [messagelistdemo(), messageform()])));
+                children: [messagelist(), messageform()])));
   }
 
-  Widget messagelistdemo() {
+  // Widget messagelistdemo() {
+  //   return Expanded(
+  //       child: ListView.builder(
+  //           reverse: true,
+  //           itemCount: users.length,
+  //           itemBuilder: (context, index) {
+  //             return Row(
+  //               mainAxisAlignment: users[index] == "1"
+  //                   ? MainAxisAlignment.end
+  //                   : MainAxisAlignment.start,
+  //               children: [
+  //                 Padding(
+  //                   padding: const EdgeInsets.all(8.0),
+  //                   child: Container(
+  //                     padding: const EdgeInsets.all(16),
+  //                     constraints: BoxConstraints(
+  //                       maxWidth: 280,
+  //                     ),
+  //                     decoration: BoxDecoration(
+  //                       borderRadius: BorderRadius.circular(5),
+  //                       color: users[index] == "1"
+  //                           ? Colors.deepPurple[300]
+  //                           : Colors.teal[300],
+  //                     ),
+  //                     child: Column(
+  //                       children: [
+  //                         Row(
+  //                           children: [
+  //                             Text(
+  //                               "username",
+  //                               style: TextStyle(
+  //                                   fontSize: 16,
+  //                                   color: Colors.white,
+  //                                   fontWeight: FontWeight.bold),
+  //                             )
+  //                           ],
+  //                         ),
+  //                         SizedBox(
+  //                           height: 5,
+  //                         ),
+  //                         Text(
+  //                           " Eveniet optio aspernatur qui recusandae.",
+  //                           style: TextStyle(color: Colors.white),
+  //                         ),
+  //                         Row(
+  //                           mainAxisAlignment: MainAxisAlignment.end,
+  //                           children: [
+  //                             Text(
+  //                               timeago.format(DateTime.now(), locale: 'tr'),
+  //                               style: TextStyle(color: Colors.white),
+  //                             ),
+  //                           ],
+  //                         )
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             );
+  //           }));
+  // }
+
+  Widget messagelist() {
     return Expanded(
-        child: ListView.builder(
-            reverse: true,
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              return Row(
-                mainAxisAlignment: users[index] == "1"
-                    ? MainAxisAlignment.end
-                    : MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      constraints: BoxConstraints(
-                        maxWidth: 280,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: users[index] == "1"
-                            ? Colors.deepPurple[300]
-                            : Colors.teal[300],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "username",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              )
-                            ],
-                          ),
-                          SizedBox(
-                            height: 5,
-                          ),
-                          Text(
-                            " Eveniet optio aspernatur qui recusandae.",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                timeago.format(DateTime.now(), locale: 'tr'),
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            }));
-  }
-
-  Widget messagelist() => Expanded(
       child: StreamBuilder<QuerySnapshot>(
-          stream: MessageService().getMessage(userid, seconduserid),
-          builder: (context, snapshots) {
-            if (snapshots.connectionState == ConnectionState.waiting) {
+          stream: MessageService().getMessage(
+              friendId: this.widget.friendId, userId: this.widget.userId),
+          builder: (_, snapshot) {
+            if (snapshot.hasError) {
+              return Text("has error");
+            } else if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: RefreshProgressIndicator());
             }
-            if (!snapshots.hasData) {
-              return SizedBox(height: 0.0);
-            } else {
-              return ListView.builder(
-                  itemCount: snapshots.data.docs.length,
-                  itemBuilder: (context, index) {
-                    MessageModel model =
-                        MessageModel.createdocument(snapshots.data.docs[index]);
-                    return Container(child: Text(model.value));
-                  });
-            }
-          }));
+            List<MessageModel> user = snapshot.data.docs
+                .map((e) => MessageModel.createdocument(e))
+                .toList();
+            return ListView.builder(
+              itemCount: user.length,
+              itemBuilder: (_, index) {
+                return Row(
+                  mainAxisAlignment: user[index].userid != this.widget.userId
+                      ? MainAxisAlignment.end
+                      : MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        constraints: BoxConstraints(maxWidth: 200),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: user[index].userid != this.widget.userId
+                              ? Colors.deepPurple[300]
+                              : Colors.teal[300],
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              "${user[index].value}",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text("${user[index].username}",
+                                    style: TextStyle(
+                                        fontSize: 10, color: Colors.white)),
+                                Text(
+                                  timeago.format(user[index].date.toDate(),
+                                      locale: 'tr'),
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 10),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          }),
+    );
+  }
 
   Widget messageform() => Container(
           child: Padding(
@@ -158,11 +216,13 @@ class _MessageState extends State<Message> {
             ),
             SizedBox(width: 5.0),
             RawMaterialButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_controller.text.trim().isNotEmpty) {
-                  print(_controller.text);
-
-                  ///message create function
+                  await MessageService().createMessage(
+                      friendId: this.widget.friendId,
+                      userId: this.widget.userId,
+                      value: _controller.text,
+                      username: model.username);
                   _controller.clear();
                 }
               },

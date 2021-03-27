@@ -346,6 +346,21 @@ class _HomeState extends State<Home> {
                                           return Card(
                                               child: GestureDetector(
                                                   onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                            builder:
+                                                                (context) =>
+                                                                    Message(
+                                                                      avatar: user
+                                                                          .avatar,
+                                                                      friendId:
+                                                                          user.id,
+                                                                      username:
+                                                                          user.username,
+                                                                      userId:
+                                                                          id,
+                                                                    )));
                                                     print(user.id);
                                                   },
                                                   child: ListTile(
