@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
 import 'package:whalechat/core/views/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -177,36 +178,52 @@ class _HomeState extends State<Home> {
   }
 
   Widget _messagelist(String id) {
-    //streambuilder ile kullanıcıların konuşma listesi gelecek
-    return ListView(
-      children: [
-        _usermessage(),
-        _usermessage(),
-        _usermessage(),
-        _usermessage(),
-      ],
-    );
-  }
-
-  Widget _usermessage() {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-          context, MaterialPageRoute(builder: (context) => Message())),
-      child: Card(
-          child: ListTile(
-        autofocus: false,
-        leading: CircleAvatar(
-          backgroundColor: Colors.cyan,
-        ),
-        title: Text(
-          "username",
-          style: TextStyle(fontSize: 12),
-        ),
-        // ignore: todo
-        //TODO: buraya en son atılan mesaj gösterilecek
-        subtitle: Text("Message..."),
-      )),
-    );
+    return StreamBuilder<QuerySnapshot>(
+        stream: MessageService().getMessages(id: id),
+        builder: (_, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: RefreshProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Error snapshot "));
+          }
+          List<String> users = snapshot.data.docs.map((e) => e.id).toList();
+          List<DocumentSnapshot> usermessage = snapshot.data.docs.toList();
+          return ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (_, index) {
+                return FutureBuilder<UserModel>(
+                    future: FirebaseUserService().getUser(id: users[index]),
+                    builder: (_, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Text("Refresh");
+                      } else if (snapshot.hasError) {
+                        return Text("has error");
+                      }
+                      UserModel user = snapshot.data;
+                      return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => Message(
+                                          avatar: user.avatar,
+                                          friendId: user.id,
+                                          userId: id,
+                                          username: user.username,
+                                        )));
+                          },
+                          child: Card(
+                              child: ListTile(
+                                  leading: CircleAvatar(
+                                      backgroundImage: user.avatar == ""
+                                          ? AssetImage("assets/images/logo.png")
+                                          : NetworkImage(user.avatar)),
+                                  title: Text("${user.username}"),
+                                  subtitle: Text(
+                                      '${usermessage[index].data()["username"]} : ${usermessage[index].data()["value"].toString().length < 25 ? usermessage[index].data()["value"] : usermessage[index].data()["value"].toString().substring(0, 25) + '...'}'))));
+                    });
+              });
+        });
   }
 
   Widget _userlist(BuildContext context, String id) {
@@ -327,14 +344,13 @@ class _HomeState extends State<Home> {
                         builder: (context, snapshot) {
                           if (snapshot.hasError) {
                             return Center(child: Text("Error Code..."));
-                          }
-                          if (snapshot.hasData) {
+                          } else if (snapshot.hasData) {
                             List<String> users =
                                 snapshot.data.docs.map((e) => e.id).toList();
                             return ListView.builder(
                                 itemCount: users.length,
                                 itemBuilder: (_, index) {
-                                  return FutureBuilder(
+                                  return FutureBuilder<UserModel>(
                                       future: FirebaseUserService()
                                           .getUser(id: users[index]),
                                       builder: (_, snapshot) {
@@ -361,7 +377,6 @@ class _HomeState extends State<Home> {
                                                                       userId:
                                                                           id,
                                                                     )));
-                                                    print(user.id);
                                                   },
                                                   child: ListTile(
                                                       leading: CircleAvatar(

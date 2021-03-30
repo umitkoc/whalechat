@@ -5,6 +5,7 @@ import 'package:whalechat/core/models/messagemodel.dart';
 import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
+import 'package:whalechat/core/views/call.dart';
 
 class Message extends StatefulWidget {
   final String userId;
@@ -43,23 +44,41 @@ class _MessageState extends State<Message> {
     return Scaffold(
         backgroundColor: Color(0xffdee2d6),
         appBar: AppBar(
-          elevation: 0,
-          backgroundColor: Colors.teal,
-          title: Row(
-            children: [
-              CircleAvatar(
-                backgroundImage: this.widget.avatar == ""
-                    ? AssetImage("assets/images/logo.png")
-                    : NetworkImage(this.widget.avatar),
-              ),
-              SizedBox(width: 20.0),
-              Text(
-                "${this.widget.username}",
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              )
-            ],
-          ),
-        ),
+            elevation: 0,
+            backgroundColor: Colors.teal,
+            title: Row(
+              children: [
+                CircleAvatar(
+                  backgroundImage: this.widget.avatar == ""
+                      ? AssetImage("assets/images/logo.png")
+                      : NetworkImage(this.widget.avatar),
+                ),
+                SizedBox(width: 20.0),
+                Text(
+                  "${this.widget.username}",
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ],
+            ),
+            actions: [
+              IconButton(
+                  icon: Icon(
+                    Icons.call,
+                    color: Colors.amber,
+                  ),
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => Call(
+                              avatar: this.widget.avatar,
+                              id: this.widget.friendId)))),
+              IconButton(
+                  icon: Icon(
+                    Icons.camera_front_outlined,
+                    color: Colors.amber,
+                  ),
+                  onPressed: () => null)
+            ]),
         body: Container(
             child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,

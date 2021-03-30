@@ -7,9 +7,9 @@ class MessageService {
     return _firebase
         .collection("user")
         .doc(userId)
-        .collection("users")
-        .doc(friendId)
         .collection("message")
+        .doc(friendId)
+        .collection("messages")
         .orderBy("date")
         .snapshots();
   }
@@ -20,9 +20,27 @@ class MessageService {
     await _firebase
         .collection("user")
         .doc(userId)
-        .collection("users")
+        .collection("message")
+        .doc(friendId)
+        .collection("messages")
+        .add({
+      "userid": userId,
+      "value": value,
+      "date": date,
+      "username": username
+    });
+    await _firebase
+        .collection("user")
+        .doc(userId)
+        .collection("message")
+        .doc(friendId)
+        .set({"value": value, "username": username});
+    await _firebase
+        .collection("user")
         .doc(friendId)
         .collection("message")
+        .doc(userId)
+        .collection("messages")
         .add({
       "userid": userId,
       "value": value,
@@ -32,14 +50,16 @@ class MessageService {
     await _firebase
         .collection("user")
         .doc(friendId)
-        .collection("users")
-        .doc(userId)
         .collection("message")
-        .add({
-      "userid": userId,
-      "value": value,
-      "date": date,
-      "username": username
-    });
+        .doc(userId)
+        .set({"value": value, "username": username});
+  }
+
+  Stream<QuerySnapshot> getMessages({String id}) {
+    return _firebase
+        .collection("user")
+        .doc(id)
+        .collection("message")
+        .snapshots();
   }
 }
