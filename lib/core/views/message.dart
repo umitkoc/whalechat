@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:whalechat/core/models/messagemodel.dart';
 import 'package:whalechat/core/models/usermodel.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
 import 'package:whalechat/core/views/call.dart';
+
+import 'getcall.dart';
 
 class Message extends StatefulWidget {
   final String userId;
@@ -41,6 +44,21 @@ class _MessageState extends State<Message> {
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+        stream: CallService().getCall(userId: this.widget.userId),
+        builder: (_, snapshots) {
+          if (snapshots.hasData && snapshots.data.exists) {
+            var snapshot = snapshots.data;
+            return GetCall(
+                avatar: snapshot.data()["avatar"],
+                id: snapshot.data()["id"],
+                username: snapshot.data()["username"]);
+          }
+          return messagescaffold(context);
+        });
+  }
+
+  Widget messagescaffold(BuildContext context) {
     return Scaffold(
         backgroundColor: Color(0xffdee2d6),
         appBar: AppBar(
@@ -60,92 +78,40 @@ class _MessageState extends State<Message> {
                 ),
               ],
             ),
-            actions: [
-              IconButton(
-                  icon: Icon(
-                    Icons.call,
-                    color: Colors.amber,
-                  ),
-                  onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => Call(
-                              avatar: this.widget.avatar,
-                              id: this.widget.friendId)))),
-              IconButton(
-                  icon: Icon(
-                    Icons.camera_front_outlined,
-                    color: Colors.amber,
-                  ),
-                  onPressed: () => null)
-            ]),
-        body: Container(
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [messagelist(), messageform()])));
+            actions: [buildCallButton(context), buildScreenButton()]),
+        body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [messagelist(), messageform()]));
   }
 
-  // Widget messagelistdemo() {
-  //   return Expanded(
-  //       child: ListView.builder(
-  //           reverse: true,
-  //           itemCount: users.length,
-  //           itemBuilder: (context, index) {
-  //             return Row(
-  //               mainAxisAlignment: users[index] == "1"
-  //                   ? MainAxisAlignment.end
-  //                   : MainAxisAlignment.start,
-  //               children: [
-  //                 Padding(
-  //                   padding: const EdgeInsets.all(8.0),
-  //                   child: Container(
-  //                     padding: const EdgeInsets.all(16),
-  //                     constraints: BoxConstraints(
-  //                       maxWidth: 280,
-  //                     ),
-  //                     decoration: BoxDecoration(
-  //                       borderRadius: BorderRadius.circular(5),
-  //                       color: users[index] == "1"
-  //                           ? Colors.deepPurple[300]
-  //                           : Colors.teal[300],
-  //                     ),
-  //                     child: Column(
-  //                       children: [
-  //                         Row(
-  //                           children: [
-  //                             Text(
-  //                               "username",
-  //                               style: TextStyle(
-  //                                   fontSize: 16,
-  //                                   color: Colors.white,
-  //                                   fontWeight: FontWeight.bold),
-  //                             )
-  //                           ],
-  //                         ),
-  //                         SizedBox(
-  //                           height: 5,
-  //                         ),
-  //                         Text(
-  //                           " Eveniet optio aspernatur qui recusandae.",
-  //                           style: TextStyle(color: Colors.white),
-  //                         ),
-  //                         Row(
-  //                           mainAxisAlignment: MainAxisAlignment.end,
-  //                           children: [
-  //                             Text(
-  //                               timeago.format(DateTime.now(), locale: 'tr'),
-  //                               style: TextStyle(color: Colors.white),
-  //                             ),
-  //                           ],
-  //                         )
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ),
-  //               ],
-  //             );
-  //           }));
-  // }
+  Widget buildScreenButton() {
+    return IconButton(
+        icon: Icon(Icons.camera_front_outlined, color: Colors.amber),
+        onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => GetCall(
+                      avatar: this.widget.avatar,
+                      id: this.widget.friendId,
+                    ))));
+  }
+
+  Widget buildCallButton(BuildContext context) {
+    return IconButton(
+        icon: Icon(Icons.call, color: Colors.amber),
+        onPressed: () async {
+          await CallService().startCall(
+              username: model.username,
+              avatar: model.avatar,
+              friendId: this.widget.friendId,
+              userId: model.id);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => Call(
+                      avatar: this.widget.avatar, id: this.widget.friendId)));
+        });
+  }
 
   Widget messagelist() {
     return Expanded(

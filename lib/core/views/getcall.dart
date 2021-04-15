@@ -1,19 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
 
-class Call extends StatefulWidget {
+class GetCall extends StatefulWidget {
   final String id;
   final String avatar;
   final String username;
-  final int channelId;
+  final String channelId;
 
-  const Call({this.id, this.avatar, this.username,this.channelId});
+  const GetCall({this.id, this.avatar, this.username,this.channelId});
   @override
-  _CallState createState() => _CallState();
+  _GetCallState createState() => _GetCallState();
 }
 
-class _CallState extends State<Call> {
+class _GetCallState extends State<GetCall> {
   Timer _timer;
   int _start = 30;
   void startTimer() {
@@ -49,6 +52,8 @@ class _CallState extends State<Call> {
 
   @override
   Widget build(BuildContext context) {
+    final _userservice =
+        Provider.of<FirebaseAuthService>(context, listen: false).activeuserid;
     return Scaffold(
         body: SafeArea(
             child: Container(
@@ -71,18 +76,31 @@ class _CallState extends State<Call> {
                                       image: this.widget.avatar == ""
                                           ? AssetImage("assets/images/logo.png")
                                           : NetworkImage(this.widget.avatar)))),
-                          Column(children: [
-                            Container(
-                                width: 100,
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(50)),
-                                child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                        primary: Colors.red),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
-                                    child: Icon(Icons.call_end)))
-                          ]),
+                          Column(
+                            children: [
+                              Container(
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(50)),
+                                  child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          primary: Colors.red),
+                                      onPressed: () async {
+                                        await CallService()
+                                            .endCall(userId: _userservice);
+                                      },
+                                      child: Icon(Icons.call_end))),
+                              Container(
+                                  width: 100,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(50)),
+                                  child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          primary: Colors.green),
+                                      onPressed: () => null,
+                                      child: Icon(Icons.call))),
+                            ],
+                          ),
                           Text("$_start")
                         ])))));
   }

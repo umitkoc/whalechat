@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whalechat/core/models/usermodel.dart';
@@ -30,6 +31,8 @@ class _HomeState extends State<Home> {
     _code = "";
     super.initState();
   }
+
+ 
 
   @override
   void dispose() {
@@ -113,46 +116,44 @@ class _HomeState extends State<Home> {
   Widget editProfile() {
     final GlobalKey<FormState> _formeditkey = GlobalKey<FormState>();
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Form(
-          key: _formeditkey,
-          child: Column(children: [
-            Expanded(
-                child: Container(
-              decoration: BoxDecoration(
-                  image: DecorationImage(
-                      fit: BoxFit.fitHeight,
-                      image: dizi["avatar"] == ""
-                          ? AssetImage("assets/images/logo.png")
-                          : NetworkImage(dizi["avatar"]))),
-            )),
-            Expanded(
-              child: Column(
-                children: [
-                  SizedBox(height: 15.0),
-                  TextFormField(
-                    validator: (String value) {
-                      if (value.trim().isEmpty) {
-                        return "please username is not empty";
-                      }
-                      return null;
-                    },
-                    onSaved: (String value) {
-                      _code = value.trim();
-                    },
-                    keyboardType: TextInputType.emailAddress,
-                    initialValue: "${dizi["username"]}",
-                    decoration: InputDecoration(
-                      fillColor: Colors.white,
-                      filled: true,
-                      contentPadding: EdgeInsets.all(16),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25)),
-                      hintText: 'username:',
-                    ),
+        padding: const EdgeInsets.all(8.0),
+        child: Form(
+            key: _formeditkey,
+            child: Column(children: [
+              Expanded(
+                  child: Container(
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              fit: BoxFit.fitHeight,
+                              image: dizi["avatar"] == ""
+                                  ? AssetImage("assets/images/logo.png")
+                                  : NetworkImage(dizi["avatar"]))))),
+              Expanded(
+                  child: Column(children: [
+                SizedBox(height: 15.0),
+                TextFormField(
+                  validator: (String value) {
+                    if (value.trim().isEmpty) {
+                      return "please username is not empty";
+                    }
+                    return null;
+                  },
+                  onSaved: (String value) {
+                    _code = value.trim();
+                  },
+                  keyboardType: TextInputType.emailAddress,
+                  initialValue: "${dizi["username"]}",
+                  decoration: InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+                    contentPadding: EdgeInsets.all(16),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25)),
+                    hintText: 'username:',
                   ),
-                  SizedBox(height: 10.0),
-                  Container(
+                ),
+                SizedBox(height: 10.0),
+                Container(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                         onPressed: () {
@@ -168,13 +169,9 @@ class _HomeState extends State<Home> {
                           }
                         },
                         icon: Icon(Icons.save),
-                        label: Text("Save")),
-                  )
-                ],
-              ),
-            )
-          ])),
-    );
+                        label: Text("Save")))
+              ]))
+            ])));
   }
 
   Widget _messagelist(String id) {
