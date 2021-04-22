@@ -25,17 +25,20 @@ class _GetCallState extends State<GetCall> {
     _timer = new Timer.periodic(
       oneSec,
       (Timer timer) {
-        if (_start == 0) {
-          setState(() {
-            timer.cancel();
-          });
-        } else {
+        if (_start != 0) {
           setState(() {
             _start--;
           });
+        } else {
+          _timer.cancel();
+          endCall();
         }
       },
     );
+  }
+
+  void endCall() async {
+    await CallService().endCall(userId: "");
   }
 
   @override
@@ -54,6 +57,7 @@ class _GetCallState extends State<GetCall> {
   Widget build(BuildContext context) {
     final _userservice =
         Provider.of<FirebaseAuthService>(context, listen: false).activeuserid;
+        
     return Scaffold(
         body: SafeArea(
             child: Container(

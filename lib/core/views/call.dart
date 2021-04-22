@@ -21,7 +21,6 @@ class _CallState extends State<Call> {
         builder: (context, snapshots) {
           if (snapshots.hasData && snapshots.data.exists) {
             var snapshot = snapshots.data;
-            print(snapshot.data());
             if (snapshot.data()["state"]) {
               Navigator.push(
                   context,
@@ -69,7 +68,9 @@ class _CallState extends State<Call> {
                                 child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                         primary: Colors.red),
-                                    onPressed: () {
+                                    onPressed: () async {
+                                      await CallService()
+                                          .endCall(userId: this.widget.id);
                                       Navigator.of(context).pop();
                                     },
                                     child: Icon(Icons.call_end)))

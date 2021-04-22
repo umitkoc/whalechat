@@ -5,10 +5,11 @@ import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
+import 'package:whalechat/core/validator/user/image.dart';
 import 'package:whalechat/core/views/getcall.dart';
-import 'package:whalechat/core/views/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whalechat/core/widgets/loading.dart';
+import 'package:whalechat/core/widgets/user_card.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -49,12 +50,11 @@ class _HomeState extends State<Home> {
         builder: (_, snapshots) {
           if (snapshots.hasData && snapshots.data.exists) {
             var snapshot = snapshots.data;
-
             return GetCall(
-              avatar: snapshot.data()["avatar"],
-              id: snapshot.data()["id"],
-              username: snapshot.data()["username"],
-              channelId: snapshot.data()["channelId"],
+              avatar: snapshot.data()["avatar"],//arayan
+              id: snapshot.data()["id"],//arayan kişinin kimliği
+              username: snapshot.data()["username"],//arayan
+              channelId: snapshot.data()["channelId"],//ortak oturum kimliği
             );
           }
           return scaffoldHome(_service);
@@ -191,52 +191,33 @@ class _HomeState extends State<Home> {
             ])));
   }
 
-  Widget _messagelist(String id) {
+  Widget _messagelist(String userId) {
     return StreamBuilder<QuerySnapshot>(
-        stream: MessageService().getMessages(id: id),
+        stream: MessageService().getMessages(id: userId),
         builder: (_, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: RefreshProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error snapshot "));
+          if (snapshot.hasData) {
+            List<String> users = snapshot.data.docs.map((e) => e.id).toList();
+            List<DocumentSnapshot> usermessage = snapshot.data.docs.toList();
+            return ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (_, index) {
+                  return FutureBuilder<UserModel>(
+                      future: FirebaseUserService().getUser(id: users[index]),
+                      builder: (_, snapshot) {
+                        if (snapshot.hasData) {
+                          UserModel user = snapshot.data;
+                          return UserCard(
+                              avatar: user.avatar,
+                              friendId: user.id,
+                              id: userId,
+                              username: user.username,
+                              value: usermessage[index].data()["value"]);
+                        }
+                        return Text("");
+                      });
+                });
           }
-          List<String> users = snapshot.data.docs.map((e) => e.id).toList();
-          List<DocumentSnapshot> usermessage = snapshot.data.docs.toList();
-          return ListView.builder(
-              itemCount: users.length,
-              itemBuilder: (_, index) {
-                return FutureBuilder<UserModel>(
-                    future: FirebaseUserService().getUser(id: users[index]),
-                    builder: (_, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Text("Refresh");
-                      } else if (snapshot.hasError) {
-                        return Text("has error");
-                      }
-                      UserModel user = snapshot.data;
-                      return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => Message(
-                                          avatar: user.avatar,
-                                          friendId: user.id,
-                                          userId: id,
-                                          username: user.username,
-                                        )));
-                          },
-                          child: Card(
-                              child: ListTile(
-                                  leading: CircleAvatar(
-                                      backgroundImage: user.avatar == ""
-                                          ? AssetImage("assets/images/logo.png")
-                                          : NetworkImage(user.avatar)),
-                                  title: Text("${user.username}"),
-                                  subtitle: Text(
-                                      '${usermessage[index].data()["username"]} : ${usermessage[index].data()["value"].toString().length < 25 ? usermessage[index].data()["value"] : usermessage[index].data()["value"].toString().substring(0, 25) + '...'}'))));
-                    });
-              });
+          return Center(child: RefreshProgressIndicator());
         });
   }
 
@@ -315,14 +296,10 @@ class _HomeState extends State<Home> {
                     borderRadius: BorderRadius.circular(5)))));
   }
 
-  Widget addfriendcard(String id) {
+  Widget addfriendcard(String userId) {
     return Card(
         child: ListTile(
-      leading: CircleAvatar(
-        backgroundImage: dizi["avatar"].isEmpty
-            ? AssetImage("assets/images/logo.png")
-            : NetworkImage(dizi["avatar"]),
-      ),
+      leading: Avatar(avatar: dizi["avatar"]),
       title: Text('${dizi["username"]}'),
       trailing: IconButton(
           icon: Icon(Icons.add),
@@ -331,7 +308,7 @@ class _HomeState extends State<Home> {
               loading = true;
             });
             await FirebaseUserService()
-                .addFriend(friendId: dizi["id"], userId: id);
+                .addFriend(friendId: dizi["id"], userId: userId);
             setState(() {
               loading = false;
               dizi["ok"] = "";
@@ -340,7 +317,7 @@ class _HomeState extends State<Home> {
     ));
   }
 
-  Widget friendlist(String id) {
+  Widget friendlist(String userId) {
     return Expanded(
         flex: 2,
         child: Column(
@@ -354,11 +331,9 @@ class _HomeState extends State<Home> {
                 child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseUserService().getUsers(id: id),
+                        stream: FirebaseUserService().getUsers(id: userId),
                         builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return Center(child: Text("Error Code..."));
-                          } else if (snapshot.hasData) {
+                          if (snapshot.hasData) {
                             List<String> users =
                                 snapshot.data.docs.map((e) => e.id).toList();
                             return ListView.builder(
@@ -368,44 +343,17 @@ class _HomeState extends State<Home> {
                                       future: FirebaseUserService()
                                           .getUser(id: users[index]),
                                       builder: (_, snapshot) {
-                                        if (snapshot.hasError) {
-                                          return Center(
-                                              child: Text("no has data"));
-                                        } else if (snapshot.hasData) {
+                                        if (snapshot.hasData) {
                                           UserModel user = snapshot.data;
                                           return Card(
-                                              child: GestureDetector(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder:
-                                                                (context) =>
-                                                                    Message(
-                                                                      avatar: user
-                                                                          .avatar,
-                                                                      friendId:
-                                                                          user.id,
-                                                                      username:
-                                                                          user.username,
-                                                                      userId:
-                                                                          id,
-                                                                    )));
-                                                  },
-                                                  child: ListTile(
-                                                      leading: CircleAvatar(
-                                                          backgroundImage: user
-                                                                      .avatar ==
-                                                                  ""
-                                                              ? AssetImage(
-                                                                  "assets/images/logo.png")
-                                                              : NetworkImage(
-                                                                  user.avatar)),
-                                                      title: Text(
-                                                          "${user.username}"))));
+                                              child: UserCard(
+                                            avatar: user.avatar,
+                                            friendId: user.id,
+                                            id: userId,
+                                            username: user.username,
+                                          ));
                                         }
-                                        return Center(
-                                            child: RefreshProgressIndicator());
+                                        return Text("");
                                       });
                                 });
                           }
@@ -419,12 +367,7 @@ class _HomeState extends State<Home> {
     return FutureBuilder<UserModel>(
         future: FirebaseUserService().getUser(id: id),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: RefreshProgressIndicator());
-          }
-          if (!snapshot.hasData) {
-            return Center(child: RefreshProgressIndicator());
-          } else {
+          if (snapshot.hasData) {
             UserModel user = snapshot.data;
             dizi["avatar"] = user.avatar;
             dizi["username"] = user.username;
@@ -446,33 +389,25 @@ class _HomeState extends State<Home> {
                       children: [
                     ListTile(
                         title: Text("username"),
-                        subtitle: Text(
-                          "${user.username}",
-                        )),
+                        subtitle: Text("${user.username}")),
                     ListTile(
-                        title: Text("email"),
-                        subtitle: Text(
-                          "${user.email}",
-                        )),
+                        title: Text("email"), subtitle: Text("${user.email}")),
                     ListTile(
-                        title: Text("code"),
-                        subtitle: Text(
-                          "${user.code}",
-                        )),
+                        title: Text("code"), subtitle: Text("${user.code}")),
                     Container(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _pageController.jumpToPage(3);
-                            });
-                          },
-                          icon: Icon(Icons.account_circle),
-                          label: Text("Edit Profile")),
-                    ),
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                            onPressed: () {
+                              setState(() {
+                                _pageController.jumpToPage(3);
+                              });
+                            },
+                            icon: Icon(Icons.account_circle),
+                            label: Text("Edit Profile")))
                   ]))
             ]);
           }
+          return Center(child: RefreshProgressIndicator());
         });
   }
 }

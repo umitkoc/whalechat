@@ -6,7 +6,9 @@ import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
+import 'package:whalechat/core/validator/user/image.dart';
 import 'package:whalechat/core/views/call.dart';
+import 'package:whalechat/core/widgets/message_card.dart';
 
 import 'getcall.dart';
 
@@ -53,8 +55,7 @@ class _MessageState extends State<Message> {
                 avatar: snapshot.data()["avatar"],
                 id: snapshot.data()["id"],
                 username: snapshot.data()["username"],
-                channelId: snapshot.data()["channelId"],
-              );
+                channelId: snapshot.data()["channelId"]);
           }
           return messagescaffold(context);
         });
@@ -68,11 +69,7 @@ class _MessageState extends State<Message> {
             backgroundColor: Colors.teal,
             title: Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: this.widget.avatar == ""
-                      ? AssetImage("assets/images/logo.png")
-                      : NetworkImage(this.widget.avatar),
-                ),
+                Avatar(avatar: this.widget.avatar),
                 SizedBox(width: 20.0),
                 Text(
                   "${this.widget.username}",
@@ -111,7 +108,6 @@ class _MessageState extends State<Message> {
               context,
               MaterialPageRoute(
                   builder: (context) => Call(
-
                       avatar: this.widget.avatar, id: this.widget.friendId)));
         });
   }
@@ -122,61 +118,24 @@ class _MessageState extends State<Message> {
           stream: MessageService().getMessage(
               friendId: this.widget.friendId, userId: this.widget.userId),
           builder: (_, snapshot) {
-            if (snapshot.hasError) {
-              return Text("has error");
-            } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: RefreshProgressIndicator());
+            if (snapshot.hasData) {
+              List<MessageModel> user = snapshot.data.docs
+                  .map((e) => MessageModel.createdocument(e))
+                  .toList();
+              return ListView.builder(
+                itemCount: user.length,
+                itemBuilder: (_, index) {
+                  return MessageCard(
+                      userId: this.widget.userId,
+                      id: user[index].userid,
+                      username: user[index].username,
+                      value: user[index].value,
+                      date: timeago.format(user[index].date.toDate(),
+                          locale: 'tr'));
+                },
+              );
             }
-            List<MessageModel> user = snapshot.data.docs
-                .map((e) => MessageModel.createdocument(e))
-                .toList();
-            return ListView.builder(
-              itemCount: user.length,
-              itemBuilder: (_, index) {
-                return Row(
-                  mainAxisAlignment: user[index].userid != this.widget.userId
-                      ? MainAxisAlignment.end
-                      : MainAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        constraints: BoxConstraints(maxWidth: 200),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: user[index].userid != this.widget.userId
-                              ? Colors.deepPurple[300]
-                              : Colors.teal[300],
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              "${user[index].value}",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("${user[index].username}",
-                                    style: TextStyle(
-                                        fontSize: 10, color: Colors.white)),
-                                Text(
-                                  timeago.format(user[index].date.toDate(),
-                                      locale: 'tr'),
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 10),
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            );
+            return Center(child: RefreshProgressIndicator());
           }),
     );
   }
@@ -229,3 +188,47 @@ class _MessageState extends State<Message> {
         ),
       ));
 }
+
+// return Row(
+//   mainAxisAlignment: user[index].userid != this.widget.userId
+//       ? MainAxisAlignment.end
+//       : MainAxisAlignment.start,
+//   children: [
+//     Padding(
+//       padding: const EdgeInsets.all(8.0),
+//       child: Container(
+//         padding: const EdgeInsets.all(16),
+//         constraints: BoxConstraints(maxWidth: 200),
+//         decoration: BoxDecoration(
+//           borderRadius: BorderRadius.circular(5),
+//           color: user[index].userid != this.widget.userId
+//               ? Colors.deepPurple[300]
+//               : Colors.teal[300],
+//         ),
+//         child: Column(
+//           children: [
+//             Text(
+//               "${user[index].value}",
+//               style: TextStyle(color: Colors.white),
+//             ),
+//             Row(
+//               mainAxisAlignment:
+//                   MainAxisAlignment.spaceBetween,
+//               children: [
+//                 Text("${user[index].username}",
+//                     style: TextStyle(
+//                         fontSize: 10, color: Colors.white)),
+//                 Text(
+//                   timeago.format(user[index].date.toDate(),
+//                       locale: 'tr'),
+//                   style: TextStyle(
+//                       color: Colors.white, fontSize: 10),
+//                 ),
+//               ],
+//             )
+//           ],
+//         ),
+//       ),
+//     ),
+//   ],
+// );
