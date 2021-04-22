@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
@@ -16,39 +14,6 @@ class Call extends StatefulWidget {
 }
 
 class _CallState extends State<Call> {
-  Timer _timer;
-  int _start = 30;
-  void startTimer() {
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
-      oneSec,
-      (Timer timer) {
-        if (_start == 0) {
-          setState(() {
-            timer.cancel();
-            Navigator.of(context).pop();
-          });
-        } else {
-          setState(() {
-            _start--;
-          });
-        }
-      },
-    );
-  }
-
-  @override
-  void initState() {
-    startTimer();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<DocumentSnapshot>(
@@ -61,8 +26,9 @@ class _CallState extends State<Call> {
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          CallScreen(channelId: snapshot.data()["channelId"])));
+                      builder: (context) => CallScreen(
+                          userId: snapshot.id,
+                          channelId: snapshot.data()["channelId"])));
             }
             return callscaffold(context);
           } else if (!snapshots.data.exists) {
@@ -104,12 +70,10 @@ class _CallState extends State<Call> {
                                     style: ElevatedButton.styleFrom(
                                         primary: Colors.red),
                                     onPressed: () {
-                                      _timer.cancel();
                                       Navigator.of(context).pop();
                                     },
                                     child: Icon(Icons.call_end)))
                           ]),
-                          Text("$_start")
                         ])))));
   }
 }

@@ -1,15 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
 
 class CallScreen extends StatefulWidget {
   final String channelId;
+  final String userId;
 
-  const CallScreen({this.channelId});
+  const CallScreen({this.userId, this.channelId});
   @override
   _CallScreenState createState() => _CallScreenState();
 }
 
 class _CallScreenState extends State<CallScreen> {
+  @override
+  void initState() {
+    endCall();
+    super.initState();
+  }
+
+  void endCall() async {
+    await CallService().endCall(userId: this.widget.userId);
+  }
+
   InAppWebViewController webViewController;
   @override
   Widget build(BuildContext context) {

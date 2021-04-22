@@ -49,7 +49,6 @@ class _MessageState extends State<Message> {
         builder: (_, snapshots) {
           if (snapshots.hasData && snapshots.data.exists) {
             var snapshot = snapshots.data;
-          
             return GetCall(
                 avatar: snapshot.data()["avatar"],
                 id: snapshot.data()["id"],

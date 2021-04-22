@@ -28,7 +28,6 @@ class _GetCallState extends State<GetCall> {
         if (_start == 0) {
           setState(() {
             timer.cancel();
-            Navigator.of(context).pop();
           });
         } else {
           setState(() {
@@ -107,6 +106,7 @@ class _GetCallState extends State<GetCall> {
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     CallScreen(
+                                                        userId: _userservice,
                                                         channelId: this
                                                             .widget
                                                             .channelId)));
