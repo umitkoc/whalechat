@@ -1,14 +1,16 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
+import 'package:whalechat/core/views/call_screen.dart';
 
 class Call extends StatefulWidget {
   final String id;
   final String avatar;
   final String username;
-  final int channelId;
 
-  const Call({this.id, this.avatar, this.username,this.channelId});
+  const Call({this.id, this.avatar, this.username});
   @override
   _CallState createState() => _CallState();
 }
@@ -49,6 +51,28 @@ class _CallState extends State<Call> {
 
   @override
   Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+        stream: CallService().getCall(userId: this.widget.id),
+        builder: (context, snapshots) {
+          if (snapshots.hasData && snapshots.data.exists) {
+            var snapshot = snapshots.data;
+            print(snapshot.data());
+            if (snapshot.data()["state"]) {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          CallScreen(channelId: snapshot.data()["channelId"])));
+            }
+            return callscaffold(context);
+          } else if (!snapshots.data.exists) {
+            Navigator.of(context).pop();
+          }
+          return callscaffold(context);
+        });
+  }
+
+  Scaffold callscaffold(BuildContext context) {
     return Scaffold(
         body: SafeArea(
             child: Container(
@@ -79,8 +103,10 @@ class _CallState extends State<Call> {
                                 child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
                                         primary: Colors.red),
-                                    onPressed: () =>
-                                        Navigator.of(context).pop(),
+                                    onPressed: () {
+                                      _timer.cancel();
+                                      Navigator.of(context).pop();
+                                    },
                                     child: Icon(Icons.call_end)))
                           ]),
                           Text("$_start")

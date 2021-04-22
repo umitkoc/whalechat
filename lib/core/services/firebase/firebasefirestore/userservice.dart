@@ -20,7 +20,8 @@ class FirebaseUserService {
 
   Future<UserModel> getUser({String id}) async {
     DocumentSnapshot snapshot =
-        await _firestore.collection("user").doc(id).get();
+        await _firestore.collection("user")
+        .doc(id).get();
     if (snapshot.exists) {
       UserModel user = UserModel.createfirebasedocument(snapshot);
       return user;

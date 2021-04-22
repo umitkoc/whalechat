@@ -1,10 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
+import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/messageservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
+import 'package:whalechat/core/views/getcall.dart';
 import 'package:whalechat/core/views/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:whalechat/core/widgets/loading.dart';
@@ -32,8 +33,6 @@ class _HomeState extends State<Home> {
     super.initState();
   }
 
- 
-
   @override
   void dispose() {
     _pageController.dispose();
@@ -45,6 +44,24 @@ class _HomeState extends State<Home> {
   Widget build(BuildContext context) {
     final _service = Provider.of<FirebaseAuthService>(context, listen: false);
 
+    return StreamBuilder<DocumentSnapshot>(
+        stream: CallService().getCall(userId: _service.activeuserid),
+        builder: (_, snapshots) {
+          if (snapshots.hasData && snapshots.data.exists) {
+            var snapshot = snapshots.data;
+
+            return GetCall(
+              avatar: snapshot.data()["avatar"],
+              id: snapshot.data()["id"],
+              username: snapshot.data()["username"],
+              channelId: snapshot.data()["channelId"],
+            );
+          }
+          return scaffoldHome(_service);
+        });
+  }
+
+  Scaffold scaffoldHome(FirebaseAuthService _service) {
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Colors.teal,

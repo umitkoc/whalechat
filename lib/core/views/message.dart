@@ -49,10 +49,13 @@ class _MessageState extends State<Message> {
         builder: (_, snapshots) {
           if (snapshots.hasData && snapshots.data.exists) {
             var snapshot = snapshots.data;
+          
             return GetCall(
                 avatar: snapshot.data()["avatar"],
                 id: snapshot.data()["id"],
-                username: snapshot.data()["username"]);
+                username: snapshot.data()["username"],
+                channelId: snapshot.data()["channelId"],
+              );
           }
           return messagescaffold(context);
         });
@@ -109,6 +112,7 @@ class _MessageState extends State<Message> {
               context,
               MaterialPageRoute(
                   builder: (context) => Call(
+
                       avatar: this.widget.avatar, id: this.widget.friendId)));
         });
   }

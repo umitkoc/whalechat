@@ -13,7 +13,7 @@ class CallService {
       "avatar": avatar,
       "username": username,
       "state": false,
-      "channeldId": rng.nextInt(999999999).toString()
+      "channelId": rng.nextInt(999999999).toString()
     });
   }
 
@@ -26,6 +26,6 @@ class CallService {
   }
 
   Future<void> answerCall({String userId}) async {
-    return _firestore.collection("call").doc(userId).update({"state": true});
+    await _firestore.collection("call").doc(userId).update({"state": true});
   }
 }

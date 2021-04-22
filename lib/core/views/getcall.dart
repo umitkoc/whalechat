@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
+import 'package:whalechat/core/views/call_screen.dart';
 
 class GetCall extends StatefulWidget {
   final String id;
@@ -11,7 +12,7 @@ class GetCall extends StatefulWidget {
   final String username;
   final String channelId;
 
-  const GetCall({this.id, this.avatar, this.username,this.channelId});
+  const GetCall({this.id, this.avatar, this.username, this.channelId});
   @override
   _GetCallState createState() => _GetCallState();
 }
@@ -97,7 +98,19 @@ class _GetCallState extends State<GetCall> {
                                   child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
                                           primary: Colors.green),
-                                      onPressed: () => null,
+                                      onPressed: () async {
+                                        _timer.cancel();
+                                        await CallService()
+                                            .answerCall(userId: _userservice);
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CallScreen(
+                                                        channelId: this
+                                                            .widget
+                                                            .channelId)));
+                                      },
                                       child: Icon(Icons.call))),
                             ],
                           ),
