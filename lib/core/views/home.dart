@@ -82,7 +82,7 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.teal,
         title: Text("WhaleChat",
             style: TextStyle(
-                fontFamily: "Akaya", color: Colors.white, fontSize: 30)),
+                fontFamily: "Akaya", color: Colors.white, fontSize: 25)),
         centerTitle: true,
         actions: [
           index == 0
