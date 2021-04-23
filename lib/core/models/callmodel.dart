@@ -3,14 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class CallModel {
   final String id;
   final String avatar;
-  final String userId;
+  final String username;
+  final String channelId;
 
-  CallModel({this.id, this.avatar, this.userId});
+  CallModel({this.id, this.avatar, this.username, this.channelId});
 
-  factory CallModel.createdocument(DocumentSnapshot snapshot) {
+  factory CallModel.createfirebase(DocumentSnapshot snapshot) {
     return CallModel(
         avatar: snapshot.data()["avatar"],
-        id: snapshot.id,
-        userId: snapshot.data()["userId"]);
+        channelId: snapshot.data()["channelId"],
+        id: snapshot.data()["id"],
+        username: snapshot.data()["username"]);
   }
 }

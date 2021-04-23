@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
 import 'package:whalechat/core/views/call_screen.dart';
+import 'package:whalechat/core/widgets/boxdec_image.dart';
 
 class Call extends StatefulWidget {
   final String id;
@@ -49,17 +50,7 @@ class _CallState extends State<Call> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                              width: 200,
-                              height: 200,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(100),
-                                  image: DecorationImage(
-                                      repeat: ImageRepeat.noRepeat,
-                                      fit: BoxFit.fitHeight,
-                                      image: this.widget.avatar == ""
-                                          ? AssetImage("assets/images/logo.png")
-                                          : NetworkImage(this.widget.avatar)))),
+                          ImageControl(avatar: this.widget.avatar),
                           Column(children: [
                             Container(
                                 width: 100,
@@ -74,7 +65,7 @@ class _CallState extends State<Call> {
                                       Navigator.of(context).pop();
                                     },
                                     child: Icon(Icons.call_end)))
-                          ]),
+                          ])
                         ])))));
   }
 }

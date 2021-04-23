@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:whalechat/core/models/callmodel.dart';
 import 'package:whalechat/core/models/usermodel.dart';
 import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
@@ -49,12 +50,13 @@ class _HomeState extends State<Home> {
         stream: CallService().getCall(userId: _service.activeuserid),
         builder: (_, snapshots) {
           if (snapshots.hasData && snapshots.data.exists) {
-            var snapshot = snapshots.data;
+            CallModel call = CallModel.createfirebase(snapshots.data);
             return GetCall(
-              avatar: snapshot.data()["avatar"],//arayan
-              id: snapshot.data()["id"],//arayan kişinin kimliği
-              username: snapshot.data()["username"],//arayan
-              channelId: snapshot.data()["channelId"],//ortak oturum kimliği
+              id: snapshots.data.id,
+              avatar: call.avatar,
+              channelId: call.channelId,
+              userId: call.id,
+              username: call.username,
             );
           }
           return scaffoldHome(_service);
@@ -63,31 +65,7 @@ class _HomeState extends State<Home> {
 
   Scaffold scaffoldHome(FirebaseAuthService _service) {
     return Scaffold(
-      appBar: AppBar(
-          backgroundColor: Colors.teal,
-          title: Text("WhaleChat",
-              style: TextStyle(
-                  fontFamily: "Akaya", color: Colors.white, fontSize: 30)),
-          centerTitle: true,
-          actions: [
-            index == 0
-                ? IconButton(
-                    color: Colors.amber,
-                    icon: Icon(Icons.messenger_outline_sharp),
-                    onPressed: () => null)
-                : index == 1
-                    ? Icon(Icons.supervisor_account_outlined,
-                        color: Colors.amber)
-                    : IconButton(
-                        color: Colors.amber,
-                        icon: Icon(Icons.close_rounded),
-                        onPressed: () async {
-                          setState(() {
-                            loading = true;
-                          });
-                          await _service.signOut();
-                        })
-          ]),
+      appBar: appBar(_service),
       body: Stack(
         alignment: Alignment.center,
         children: [
@@ -97,6 +75,33 @@ class _HomeState extends State<Home> {
       ),
       bottomNavigationBar: buildBottomNavigationBar(),
     );
+  }
+
+  Widget appBar(FirebaseAuthService _service) {
+    return AppBar(
+        backgroundColor: Colors.teal,
+        title: Text("WhaleChat",
+            style: TextStyle(
+                fontFamily: "Akaya", color: Colors.white, fontSize: 30)),
+        centerTitle: true,
+        actions: [
+          index == 0
+              ? IconButton(
+                  color: Colors.amber,
+                  icon: Icon(Icons.messenger_outline_sharp),
+                  onPressed: () => null)
+              : index == 1
+                  ? Icon(Icons.supervisor_account_outlined, color: Colors.amber)
+                  : IconButton(
+                      color: Colors.amber,
+                      icon: Icon(Icons.close_rounded),
+                      onPressed: () async {
+                        setState(() {
+                          loading = true;
+                        });
+                        await _service.signOut();
+                      })
+        ]);
   }
 
   Widget buildBottomNavigationBar() {

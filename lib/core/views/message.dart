@@ -52,8 +52,9 @@ class _MessageState extends State<Message> {
           if (snapshots.hasData && snapshots.data.exists) {
             var snapshot = snapshots.data;
             return GetCall(
+                id: snapshot.id,
                 avatar: snapshot.data()["avatar"],
-                id: snapshot.data()["id"],
+                userId: snapshot.data()["id"],
                 username: snapshot.data()["username"],
                 channelId: snapshot.data()["channelId"]);
           }
@@ -77,23 +78,13 @@ class _MessageState extends State<Message> {
                 ),
               ],
             ),
-            actions: [buildCallButton(context), buildScreenButton()]),
+            actions: [buildCallButton(context)]),
         body: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [messagelist(), messageform()]));
   }
 
-  Widget buildScreenButton() {
-    return IconButton(
-        icon: Icon(Icons.camera_front_outlined, color: Colors.amber),
-        onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => GetCall(
-                      avatar: this.widget.avatar,
-                      id: this.widget.friendId,
-                    ))));
-  }
+ 
 
   Widget buildCallButton(BuildContext context) {
     return IconButton(
