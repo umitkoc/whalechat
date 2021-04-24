@@ -70,7 +70,11 @@ class _GetCallState extends State<GetCall> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ImageControl(avatar: this.widget.avatar),
+                          ImageControl(
+                            avatar: this.widget.avatar,
+                            width: 200,
+                            heigth: 200,
+                          ),
                           Column(
                             children: [
                               Container(

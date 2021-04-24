@@ -50,7 +50,11 @@ class _CallState extends State<Call> {
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          ImageControl(avatar: this.widget.avatar),
+                          ImageControl(
+                            avatar: this.widget.avatar,
+                            heigth: 200,
+                            width: 200,
+                          ),
                           Column(children: [
                             Container(
                                 width: 100,

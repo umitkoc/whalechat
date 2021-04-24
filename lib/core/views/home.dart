@@ -9,6 +9,7 @@ import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.d
 import 'package:whalechat/core/validator/user/image.dart';
 import 'package:whalechat/core/views/getcall.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:whalechat/core/views/profile.dart';
 import 'package:whalechat/core/widgets/loading.dart';
 import 'package:whalechat/core/widgets/user_card.dart';
 
@@ -65,16 +66,15 @@ class _HomeState extends State<Home> {
 
   Scaffold scaffoldHome(FirebaseAuthService _service) {
     return Scaffold(
-      appBar: appBar(_service),
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          bodys(context, _service.activeuserid),
-          loading ? load() : SizedBox(height: 0.0)
-        ],
-      ),
-      bottomNavigationBar: buildBottomNavigationBar(),
-    );
+        appBar: appBar(_service),
+        body: Stack(
+          alignment: Alignment.center,
+          children: [
+            bodys(context, _service.activeuserid),
+            loading ? load() : SizedBox(height: 0.0)
+          ],
+        ),
+        bottomNavigationBar: buildBottomNavigationBar());
   }
 
   Widget appBar(FirebaseAuthService _service) {
@@ -88,8 +88,9 @@ class _HomeState extends State<Home> {
           index == 0
               ? IconButton(
                   color: Colors.amber,
-                  icon: Icon(Icons.messenger_outline_sharp),
-                  onPressed: () => null)
+                  icon: Icon(Icons.account_circle_outlined),
+                  onPressed: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => Profile())))
               : index == 1
                   ? Icon(Icons.supervisor_account_outlined, color: Colors.amber)
                   : IconButton(
