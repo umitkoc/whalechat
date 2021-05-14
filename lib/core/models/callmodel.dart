@@ -8,11 +8,9 @@ class CallModel {
 
   CallModel({this.id, this.avatar, this.username, this.channelId});
 
-  factory CallModel.createfirebase(DocumentSnapshot snapshot) {
-    return CallModel(
-        avatar: snapshot.data()["avatar"],
-        channelId: snapshot.data()["channelId"],
-        id: snapshot.data()["id"],
-        username: snapshot.data()["username"]);
-  }
+  factory CallModel.createfirebase(DocumentSnapshot snapshot) => CallModel(
+      avatar: snapshot.data()["avatar"],
+      channelId: snapshot.data()["channelId"],
+      id: snapshot.data()["id"],
+      username: snapshot.data()["username"]);
 }

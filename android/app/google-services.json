@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "930094756232-o5g6dhc1kgj63oo5kmgp7s6v1pnflrtm.apps.googleusercontent.com",
+          "client_id": "930094756232-k2lgmq4ue0j8a9ht01a0kl6o98oa1s5q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.whalechat",
-            "certificate_hash": "b0f3b8779e4ab6f38c84759d0c8db4847efbe3a8"
+            "certificate_hash": "fca9a4735556b4f4b795751c03a91016cf3f8107"
           }
         },
         {

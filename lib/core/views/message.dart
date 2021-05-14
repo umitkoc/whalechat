@@ -8,6 +8,7 @@ import 'package:whalechat/core/services/firebase/firebasefirestore/messageservic
 import 'package:whalechat/core/services/firebase/firebasefirestore/userservice.dart';
 import 'package:whalechat/core/validator/user/image.dart';
 import 'package:whalechat/core/views/call.dart';
+import 'package:whalechat/core/widgets/loading.dart';
 import 'package:whalechat/core/widgets/message_card.dart';
 
 import 'getcall.dart';
@@ -84,8 +85,6 @@ class _MessageState extends State<Message> {
             children: [messagelist(), messageform()]));
   }
 
- 
-
   Widget buildCallButton(BuildContext context) {
     return IconButton(
         icon: Icon(Icons.call, color: Colors.amber),
@@ -126,7 +125,7 @@ class _MessageState extends State<Message> {
                 },
               );
             }
-            return Center(child: RefreshProgressIndicator());
+            return load();
           }),
     );
   }
@@ -179,47 +178,3 @@ class _MessageState extends State<Message> {
         ),
       ));
 }
-
-// return Row(
-//   mainAxisAlignment: user[index].userid != this.widget.userId
-//       ? MainAxisAlignment.end
-//       : MainAxisAlignment.start,
-//   children: [
-//     Padding(
-//       padding: const EdgeInsets.all(8.0),
-//       child: Container(
-//         padding: const EdgeInsets.all(16),
-//         constraints: BoxConstraints(maxWidth: 200),
-//         decoration: BoxDecoration(
-//           borderRadius: BorderRadius.circular(5),
-//           color: user[index].userid != this.widget.userId
-//               ? Colors.deepPurple[300]
-//               : Colors.teal[300],
-//         ),
-//         child: Column(
-//           children: [
-//             Text(
-//               "${user[index].value}",
-//               style: TextStyle(color: Colors.white),
-//             ),
-//             Row(
-//               mainAxisAlignment:
-//                   MainAxisAlignment.spaceBetween,
-//               children: [
-//                 Text("${user[index].username}",
-//                     style: TextStyle(
-//                         fontSize: 10, color: Colors.white)),
-//                 Text(
-//                   timeago.format(user[index].date.toDate(),
-//                       locale: 'tr'),
-//                   style: TextStyle(
-//                       color: Colors.white, fontSize: 10),
-//                 ),
-//               ],
-//             )
-//           ],
-//         ),
-//       ),
-//     ),
-//   ],
-// );

@@ -3,16 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class MessageService {
   final FirebaseFirestore _firebase = FirebaseFirestore.instance;
 
-  Stream<QuerySnapshot> getMessage({String userId, String friendId}) {
-    return _firebase
-        .collection("user")
-        .doc(userId)
-        .collection("message")
-        .doc(friendId)
-        .collection("messages")
-        .orderBy("date")
-        .snapshots();
-  }
+  Stream<QuerySnapshot> getMessage({String userId, String friendId}) =>
+      _firebase
+          .collection("user")
+          .doc(userId)
+          .collection("message")
+          .doc(friendId)
+          .collection("messages")
+          .orderBy("date")
+          .snapshots();
 
   Future<void> createMessage(
       {String value, String userId, String friendId, String username}) async {
@@ -55,11 +54,6 @@ class MessageService {
         .set({"value": value, "username": username});
   }
 
-  Stream<QuerySnapshot> getMessages({String id}) {
-    return _firebase
-        .collection("user")
-        .doc(id)
-        .collection("message")
-        .snapshots();
-  }
+  Stream<QuerySnapshot> getMessages({String id}) =>
+      _firebase.collection("user").doc(id).collection("message").snapshots();
 }

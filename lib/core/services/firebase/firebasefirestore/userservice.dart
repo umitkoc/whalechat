@@ -14,14 +14,14 @@ class FirebaseUserService {
       "create_date": date,
       "avatar": avatar,
       "code": RandomCode().getRandomString(7),
-      "about": "hello whalechat app ❤️",
+      "about": "hello whalechat app ❤️"
     });
+    await addHistory(id: id, state: "uygulamaya kayıt oldum");
   }
 
   Future<UserModel> getUser({String id}) async {
     DocumentSnapshot snapshot =
-        await _firestore.collection("user")
-        .doc(id).get();
+        await _firestore.collection("user").doc(id).get();
     if (snapshot.exists) {
       UserModel user = UserModel.createfirebasedocument(snapshot);
       return user;
@@ -29,15 +29,10 @@ class FirebaseUserService {
     return null;
   }
 
-  Stream<QuerySnapshot> getUsers({String id}) {
-    return _firestore
-        .collection("user")
-        .doc(id)
-        .collection("users")
-        .snapshots();
-  }
+  Stream<QuerySnapshot> getUsers({String id}) =>
+      _firestore.collection("user").doc(id).collection("users").snapshots();
 
-  Future<List<UserModel>> getCode({String code}) async {
+  Future<List<UserModel>> getCode({String code, String id}) async {
     QuerySnapshot snapshot = await _firestore
         .collection("user")
         .where("code", isEqualTo: code)
@@ -47,7 +42,9 @@ class FirebaseUserService {
       List<UserModel> model = snapshot.docs
           .map((e) => UserModel.createfirebasedocument(e))
           .toList();
-      return model;
+      if (model[0].id != id) {
+        return model;
+      }
     }
     return null;
   }
@@ -66,8 +63,35 @@ class FirebaseUserService {
           .collection("users")
           .doc(userId)
           .set({});
+      await _firestore.collection("user").doc(friendId).update({
+        "code": RandomCode().getRandomString(7),
+      });
     }
   }
 
-  
+  Future<void> usernameUpdate({String id, String username}) async {
+    await _firestore.collection("user").doc(id).update({"username": username});
+    await addHistory(
+        id: id, state: "kullanıcı adımı $username olarak değiştirdim");
+  }
+
+  Future<void> profileUpdate({String url, String id}) async {
+    await _firestore.collection("user").doc(id).update({"avatar": url});
+    await addHistory(id: id, state: "profilimi değiştirdim");
+  }
+
+  Future<void> addHistory({String state, String id}) async {
+    await _firestore
+        .collection("user")
+        .doc(id)
+        .collection("history")
+        .add({"state": state, "date": date});
+  }
+
+  Stream<QuerySnapshot> getHistory({String id}) => _firestore
+      .collection("user")
+      .doc(id)
+      .collection("history")
+      .orderBy("date")
+      .snapshots();
 }

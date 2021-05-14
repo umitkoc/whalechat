@@ -13,9 +13,8 @@ class FirebaseAuthService {
     return UserModel.createfirebaseuser(user);
   }
 
-  Stream<UserModel> get userControl {
-    return _firebaseauth.authStateChanges().map(_createuser);
-  }
+  Stream<UserModel> get userControl =>
+      _firebaseauth.authStateChanges().map(_createuser);
 
   Future<UserModel> emailSignUp({String email, String password}) async {
     var _user = await _firebaseauth.createUserWithEmailAndPassword(

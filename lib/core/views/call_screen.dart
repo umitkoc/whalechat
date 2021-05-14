@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:whalechat/core/services/firebase/firebasefirestore/callservice.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CallScreen extends StatefulWidget {
   final String channelId;
@@ -15,10 +16,16 @@ class _CallScreenState extends State<CallScreen> {
   @override
   void initState() {
     endCall();
+    permision();
     super.initState();
   }
 
-  void endCall() async {
+  Future<void> permision() async {
+    await Permission.camera.request();
+    await Permission.microphone.request();
+  }
+
+  Future<void> endCall() async {
     await CallService().endCall(userId: this.widget.userId);
   }
 

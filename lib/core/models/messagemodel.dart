@@ -9,12 +9,11 @@ class MessageModel {
 
   MessageModel({this.id, this.username, this.value, this.date, this.userid});
 
-  factory MessageModel.createdocument(DocumentSnapshot snapshot) {
-    return MessageModel(
-        id: snapshot.id,
-        date: snapshot.data()["date"],
-        userid: snapshot.data()["userid"],
-        value: snapshot.data()["value"],
-        username: snapshot.data()["username"]);
-  }
+  factory MessageModel.createdocument(DocumentSnapshot snapshot) =>
+      MessageModel(
+          id: snapshot.id,
+          date: snapshot.data()["date"],
+          userid: snapshot.data()["userid"],
+          value: snapshot.data()["value"],
+          username: snapshot.data()["username"]);
 }

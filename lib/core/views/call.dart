@@ -8,7 +8,6 @@ class Call extends StatefulWidget {
   final String id;
   final String avatar;
   final String username;
-
   const Call({this.id, this.avatar, this.username});
   @override
   _CallState createState() => _CallState();
