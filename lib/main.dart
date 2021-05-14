@@ -7,6 +7,10 @@ import 'package:whalechat/core/services/firebase/firebaseauth/authservice.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+<<<<<<< HEAD
+=======
+  
+>>>>>>> d09cccc85cb03287b4c5d03018341837a17ead05
   runApp(MyApp());
 }
 

@@ -20,12 +20,20 @@ class _CallScreenState extends State<CallScreen> {
     super.initState();
   }
 
+<<<<<<< HEAD
   Future<void> permision() async {
+=======
+  void permision() async {
+>>>>>>> d09cccc85cb03287b4c5d03018341837a17ead05
     await Permission.camera.request();
     await Permission.microphone.request();
   }
 
+<<<<<<< HEAD
   Future<void> endCall() async {
+=======
+  void endCall() async {
+>>>>>>> d09cccc85cb03287b4c5d03018341837a17ead05
     await CallService().endCall(userId: this.widget.userId);
   }
 
